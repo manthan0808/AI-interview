@@ -33,11 +33,11 @@ Example format:
     const response = await axios.post(
       OPENROUTER_URL,
       {
-        model: "openai/gpt-4o",
+        model: "openai/gpt-3.5-turbo",
         messages: [
           {
             role: "system",
-            content: "You are a JSON-only response bot. You return only valid JSON arrays with no markdown formatting, no code blocks, no extra text.",
+            content: "You are a JSON-only response bot. You return only a valid JSON array. Do not include markdown or extra text.",
           },
           { role: "user", content: prompt },
         ],
@@ -56,17 +56,18 @@ Example format:
 
     const content = response.data.choices[0].message.content.trim();
 
-    // Try to parse — strip markdown code fences if present
-    let cleaned = content;
-    if (cleaned.startsWith("```")) {
-      cleaned = cleaned.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+    // Enhanced JSON extraction using Regex
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      console.error("No JSON array found in AI response:", content);
+      throw new Error("AI failed to return a valid question array.");
     }
 
-    const questions = JSON.parse(cleaned);
+    const questions = JSON.parse(jsonMatch[0]);
     return questions;
   } catch (error) {
     console.error("AI question generation error:", error?.response?.data || error.message);
-    throw new Error("Failed to generate interview questions from AI");
+    throw new Error(`Failed to generate questions: ${error.message}`);
   }
 };
 
@@ -115,11 +116,11 @@ The rating must be a number from 1 to 10. The 'categories' object must contain n
     const response = await axios.post(
       OPENROUTER_URL,
       {
-        model: "openai/gpt-4o",
+        model: "openai/gpt-3.5-turbo",
         messages: [
           {
             role: "system",
-            content: "You are a JSON-only response bot. Return only valid JSON with no markdown formatting, no code blocks, no extra text.",
+            content: "You are a JSON-only response bot. Return only a valid JSON object.",
           },
           { role: "user", content: prompt },
         ],
@@ -138,16 +139,17 @@ The rating must be a number from 1 to 10. The 'categories' object must contain n
 
     const content = response.data.choices[0].message.content.trim();
 
-    let cleaned = content;
-    if (cleaned.startsWith("```")) {
-      cleaned = cleaned.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error("No JSON object found in AI feedback response:", content);
+      throw new Error("AI failed to return valid feedback JSON.");
     }
 
-    const feedback = JSON.parse(cleaned);
+    const feedback = JSON.parse(jsonMatch[0]);
     return feedback;
   } catch (error) {
     console.error("AI feedback generation error:", error?.response?.data || error.message);
-    throw new Error("Failed to generate feedback from AI");
+    throw new Error(`Failed to generate feedback: ${error.message}`);
   }
 };
 

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   HiUpload, HiArrowRight, HiArrowLeft, HiCheck,
   HiLightningBolt, HiStar, HiPaperAirplane, HiChartBar,
-  HiAdjustments, HiCode, HiUserGroup, HiMicrophone, HiClock, HiStop
+  HiAdjustments, HiCode, HiUserGroup, HiMicrophone, HiClock, HiStop, HiX
 } from "react-icons/hi";
 import { FaUserTie, FaUserGraduate } from "react-icons/fa";
 import { analyzeResume, createInterview, submitAnswer, nextQuestion, resetInterview } from "../store/slices/interviewSlice";
@@ -145,6 +145,7 @@ const InterviewPage = () => {
       );
 
       if (createInterview.fulfilled.match(createResult)) {
+        dispatch(updateCredits(createResult.payload.remainingCredits));
         setStep(2);
         if (timedMode) {
           setTimeLeft(120);

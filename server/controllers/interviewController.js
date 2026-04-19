@@ -60,6 +60,15 @@ const createInterview = async (req, res) => {
       return res.status(400).json({ message: "Job role and questions are required" });
     }
 
+    // Deduct 10 credits for starting a new interview
+    const user = await User.findById(req.user._id);
+    if (!user || user.credits < 10) {
+      return res.status(403).json({ message: "Starting an interview requires 10 credits. Please purchase more." });
+    }
+
+    const remainingCredits = user.credits - 10;
+    await User.findByIdAndUpdate(user._id, { credits: remainingCredits });
+
     const interview = await Interview.create({
       userId: req.user._id,
       jobRole,
@@ -76,6 +85,7 @@ const createInterview = async (req, res) => {
     res.status(201).json({
       message: "Interview session created",
       interview,
+      remainingCredits,
     });
   } catch (error) {
     console.error("Create Interview Error:", error.message);
