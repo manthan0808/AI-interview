@@ -18,7 +18,7 @@ initializeFirebase();
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: true,
     credentials: true,
   })
 );
@@ -46,17 +46,17 @@ app.use((err, req, res, next) => {
 
 // Start server
 const startServer = async () => {
-    // Attempt to access Firestore collection as a connectivity check
-    try {
-        await getDb().collection("users").limit(1).get();
-        console.log("✅ Firestore collection check success");
-    } catch (error) {
-        console.error("❌ Firestore connection failed:", error.message);
-    }
+  // Attempt to access Firestore collection as a connectivity check
+  try {
+    await getDb().collection("users").limit(1).get();
+    console.log("✅ Firestore collection check success");
+  } catch (error) {
+    console.error("❌ Firestore connection failed:", error.message);
+  }
 
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`🚀 Server running on http://localhost:${PORT}`);
-    });
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
 };
 
 startServer();

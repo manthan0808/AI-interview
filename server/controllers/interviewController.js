@@ -13,26 +13,33 @@ const analyzeResume = async (req, res) => {
       return res.status(400).json({ message: "Please upload a PDF resume" });
     }
 
-    const { jobRole, experience } = req.body;
+    const { jobRole, experience, techCount, hrCount } = req.body;
 
     if (!jobRole) {
       return res.status(400).json({ message: "Job role is required" });
     }
 
+    // Parse question counts (defaults: 6 tech, 4 HR)
+    const parsedTech = parseInt(techCount, 10);
+    const parsedHr = parseInt(hrCount, 10);
+    const finalTech = !isNaN(parsedTech) && parsedTech >= 0 ? parsedTech : 6;
+    const finalHr = !isNaN(parsedHr) && parsedHr >= 0 ? parsedHr : 4;
+
     // Extract text from PDF
     const pdfData = await pdfParse(req.file.buffer);
     const resumeText = pdfData.text;
 
-    if (!resumeText || resumeText.trim().length < 50) {
-      return res.status(400).json({ message: "Could not extract sufficient text from the resume PDF" });
+    let finalResumeText = resumeText;
+    if (!resumeText || resumeText.trim().length < 15) {
+       finalResumeText = `Candidate is applying for ${jobRole} with ${experience} experience. The uploaded resume was mostly empty or scanned. Please generate general industry-standard questions for this job role.`;
     }
 
     // Generate questions via AI
-    const questions = await generateQuestions(resumeText, jobRole, experience || "fresher");
+    const questions = await generateQuestions(finalResumeText, jobRole, experience || "fresher", finalTech, finalHr);
 
     res.status(200).json({
       message: "Resume analyzed successfully",
-      resumeText,
+      resumeText: finalResumeText,
       questions,
     });
   } catch (error) {

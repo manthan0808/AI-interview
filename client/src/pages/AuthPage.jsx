@@ -49,11 +49,11 @@ const AuthPage = () => {
   const features = [
     { icon: HiLightningBolt, text: "AI-Powered Questions" },
     { icon: HiShieldCheck, text: "Instant Feedback" },
-    { icon: HiSparkles, text: "5 Free Credits" },
+    { icon: HiSparkles, text: "50 Free Credits (5 interviews)" },
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark-950 relative overflow-hidden py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden py-12">
       {/* Background Effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl" />
@@ -68,23 +68,21 @@ const AuthPage = () => {
       >
         <div className="glass-card p-8 sm:p-10">
           {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/25">
-                <HiLightningBolt className="text-white text-2xl" />
-              </div>
-              <span className="text-2xl font-bold text-white">
-                Interview<span className="gradient-text">AI</span>
+          <div className="flex justify-center mb-8">
+            <div className="flex items-center gap-2 group">
+              <HiLightningBolt className="text-black text-3xl transition-transform group-hover:scale-110" />
+              <span className="text-3xl font-black text-black tracking-tighter">
+                InterviewAI
               </span>
             </div>
           </div>
 
           {/* Heading */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-white mb-2">
+            <h1 className="text-2xl font-bold text-black mb-2">
               {isLogin ? "Welcome Back" : "Create Account"}
             </h1>
-            <p className="text-dark-400 text-sm">
+            <p className="text-gray-600 text-sm">
               {isLogin ? "Sign in to continue practicing" : "Join today to start your AI interviews"}
             </p>
           </div>
@@ -99,16 +97,16 @@ const AuthPage = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="relative overflow-hidden"
                 >
-                  <label className="block text-sm font-medium text-dark-300 mb-1.5 ml-1">Full Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">Full Name</label>
                   <div className="relative">
-                    <HiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 text-lg" />
+                    <HiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-lg" />
                     <input
                       type="text"
                       name="name"
                       placeholder="John Doe"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full bg-dark-900/50 border border-dark-700/50 text-white rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all placeholder:text-dark-500"
+                      className="w-full bg-white border border-gray-300 text-black rounded-md py-3 pl-11 pr-4 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all placeholder:text-gray-500"
                     />
                   </div>
                 </motion.div>
@@ -116,9 +114,9 @@ const AuthPage = () => {
             </AnimatePresence>
 
             <div>
-              <label className="block text-sm font-medium text-dark-300 mb-1.5 ml-1">Email Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">Email Address</label>
               <div className="relative">
-                <HiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 text-lg" />
+                <HiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-lg" />
                 <input
                   type="email"
                   name="email"
@@ -126,15 +124,15 @@ const AuthPage = () => {
                   placeholder="you@example.com"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full bg-dark-900/50 border border-dark-700/50 text-white rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all placeholder:text-dark-500"
+                  className="w-full bg-white border border-gray-300 text-black rounded-md py-3 pl-11 pr-4 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all placeholder:text-gray-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-dark-300 mb-1.5 ml-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">Password</label>
               <div className="relative">
-                <HiLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-400 text-lg" />
+                <HiLockClosed className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 text-lg" />
                 <input
                   type="password"
                   name="password"
@@ -142,7 +140,7 @@ const AuthPage = () => {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full bg-dark-900/50 border border-dark-700/50 text-white rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all placeholder:text-dark-500"
+                  className="w-full bg-white border border-gray-300 text-black rounded-md py-3 pl-11 pr-4 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-all placeholder:text-gray-500"
                 />
               </div>
             </div>
@@ -150,10 +148,10 @@ const AuthPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-400 hover:to-primary-500 text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 active:scale-[0.98] mt-2 disabled:opacity-50 flex items-center justify-center min-h-[52px]"
+              className="w-full bg-black text-white hover:bg-gray-800 font-semibold py-3.5 px-6 rounded-full transition-all duration-300 active:scale-[0.98] mt-2 disabled:opacity-50 flex items-center justify-center min-h-[52px]"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
               ) : (
                 isLogin ? "Sign In" : "Create Account"
               )}
@@ -168,7 +166,7 @@ const AuthPage = () => {
                 setIsLogin(!isLogin);
                 dispatch(clearError());
               }}
-              className="text-sm text-dark-400 hover:text-white transition-colors"
+              className="text-sm text-gray-600 hover:text-black transition-colors"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
@@ -176,9 +174,9 @@ const AuthPage = () => {
 
           {/* Divider */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="flex-1 h-px bg-dark-700/50" />
-            <span className="text-dark-500 text-xs uppercase tracking-wider">Or</span>
-            <div className="flex-1 h-px bg-dark-700/50" />
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-gray-500 text-xs uppercase tracking-wider">Or</span>
+            <div className="flex-1 h-px bg-gray-200" />
           </div>
 
           {/* Google Sign-In Button */}
@@ -186,27 +184,27 @@ const AuthPage = () => {
             onClick={handleGoogleLogin}
             disabled={loading}
             type="button"
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-800 font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-white/10 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mb-8"
+            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-800 border border-gray-300 font-semibold py-3.5 px-6 rounded-full transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mb-8"
           >
             <FcGoogle className="text-xl" />
             Continue with Google
           </button>
 
           {/* Features */}
-          <div className="space-y-3 pt-6 border-t border-dark-700/30">
-            <p className="text-xs font-semibold text-dark-400 uppercase tracking-widest text-center mb-4">Platform Benefits</p>
+          <div className="space-y-3 pt-6 border-t border-gray-200">
+            <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest text-center mb-4">Platform Benefits</p>
             {features.map(({ icon: Icon, text }, index) => (
               <motion.div
                 key={text}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + index * 0.1 }}
-                className="flex items-center gap-3 p-3 rounded-xl bg-dark-900/50 border border-dark-700/30"
+                className="flex items-center gap-3 p-3 rounded-xl bg-white border border-gray-200"
               >
-                <div className="w-8 h-8 bg-primary-500/10 rounded-lg flex items-center justify-center">
-                  <Icon className="text-primary-400 text-sm" />
+                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <Icon className="text-blue-500 text-sm" />
                 </div>
-                <span className="text-sm text-dark-200">{text}</span>
+                <span className="text-sm text-gray-800">{text}</span>
               </motion.div>
             ))}
           </div>

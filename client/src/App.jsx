@@ -27,7 +27,7 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-dark-950 text-white">
+      <div className="min-h-screen bg-white text-black">
         <Navbar />
 
         <Toaster
@@ -35,9 +35,9 @@ function App() {
           toastOptions={{
             duration: 4000,
             style: {
-              background: "#1e1e2e",
-              color: "#e6e6e8",
-              border: "1px solid rgba(108, 99, 255, 0.2)",
+              background: "#ffffff",
+              color: "#111827",
+              border: "1px solid #e5e7eb",
               borderRadius: "12px",
               fontSize: "14px",
             },

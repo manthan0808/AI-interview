@@ -21,17 +21,17 @@ const ReportPage = () => {
 
   if (reportLoading) {
     return (
-      <div className="min-h-screen bg-dark-950 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-200 border-t-primary-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   if (!report) {
     return (
-      <div className="min-h-screen bg-dark-950 pt-20 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Report Not Found</h2>
+          <h2 className="text-2xl font-bold text-black mb-4">Report Not Found</h2>
           <Link to="/history" className="btn-primary">Go to History</Link>
         </div>
       </div>
@@ -61,7 +61,7 @@ const ReportPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
       <div className="page-container max-w-4xl">
         {/* Header */}
         <motion.div
@@ -69,15 +69,15 @@ const ReportPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <Link to="/history" className="inline-flex items-center gap-2 text-dark-400 hover:text-primary-400 transition-colors mb-4">
+          <Link to="/history" className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors mb-4">
             <HiArrowLeft /> Back to History
           </Link>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Interview Report</h1>
+              <h1 className="text-3xl font-bold text-black mb-2">Interview Report</h1>
               <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1.5 text-dark-300">
-                  <HiBriefcase className="text-primary-400" /> {report.jobRole}
+                <span className="flex items-center gap-1.5 text-gray-700">
+                  <HiBriefcase className="text-blue-500" /> {report.jobRole}
                 </span>
                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase
                   ${report.status === "completed"
@@ -99,24 +99,24 @@ const ReportPage = () => {
           className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8"
         >
           <div className="glass-card p-6 text-center">
-            <div className={`text-4xl font-extrabold mb-1 ${typeof avgScore === 'number' || !isNaN(parseFloat(avgScore)) ? getScoreColor(parseFloat(avgScore)) : 'text-dark-400'}`}>
+            <div className={`text-4xl font-extrabold mb-1 ${typeof avgScore === 'number' || !isNaN(parseFloat(avgScore)) ? getScoreColor(parseFloat(avgScore)) : 'text-gray-600'}`}>
               {avgScore}
             </div>
-            <div className="text-dark-400 text-sm">Average Score</div>
+            <div className="text-gray-600 text-sm">Average Score</div>
           </div>
           <div className="glass-card p-6 text-center">
             <div className="text-4xl font-extrabold text-green-400 mb-1 flex items-center justify-center gap-1">
               <HiTrendingUp className="text-2xl" />
               {strengths.length}
             </div>
-            <div className="text-dark-400 text-sm">Strong Answers</div>
+            <div className="text-gray-600 text-sm">Strong Answers</div>
           </div>
           <div className="glass-card p-6 text-center">
             <div className="text-4xl font-extrabold text-orange-400 mb-1 flex items-center justify-center gap-1">
               <HiTrendingDown className="text-2xl" />
               {weaknesses.length}
             </div>
-            <div className="text-dark-400 text-sm">Needs Improvement</div>
+            <div className="text-gray-600 text-sm">Needs Improvement</div>
           </div>
         </motion.div>
 
@@ -138,7 +138,7 @@ const ReportPage = () => {
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-dark-500 text-sm font-medium">Q{index + 1}</span>
+                      <span className="text-gray-500 text-sm font-medium">Q{index + 1}</span>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase
                         ${q.type === "technical"
                           ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
@@ -147,7 +147,7 @@ const ReportPage = () => {
                         {q.type}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-white">{q.question}</h3>
+                    <h3 className="text-lg font-semibold text-black">{q.question}</h3>
                   </div>
                   {feedback && (
                     <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full border ${getScoreBg(feedback.rating)}`}>
@@ -163,15 +163,15 @@ const ReportPage = () => {
                 {answer ? (
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <HiCheckCircle className="text-primary-400 text-sm" />
-                      <span className="text-sm font-medium text-dark-300">Your Answer</span>
+                      <HiCheckCircle className="text-blue-500 text-sm" />
+                      <span className="text-sm font-medium text-gray-700">Your Answer</span>
                     </div>
-                    <p className="text-dark-200 bg-dark-900/50 rounded-xl p-4 text-sm leading-relaxed border border-dark-700/30">
+                    <p className="text-gray-800 bg-white rounded-xl p-4 text-sm leading-relaxed border border-gray-200">
                       {answer.answer}
                     </p>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 text-dark-500 text-sm mb-4">
+                  <div className="flex items-center gap-2 text-gray-500 text-sm mb-4">
                     <HiXCircle /> Not answered
                   </div>
                 )}
@@ -181,9 +181,9 @@ const ReportPage = () => {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <HiStar className="text-yellow-400 text-sm" />
-                      <span className="text-sm font-medium text-dark-300">AI Feedback</span>
+                      <span className="text-sm font-medium text-gray-700">AI Feedback</span>
                     </div>
-                    <p className="text-dark-300 bg-primary-500/5 rounded-xl p-4 text-sm leading-relaxed border border-primary-500/10">
+                    <p className="text-gray-700 bg-primary-500/5 rounded-xl p-4 text-sm leading-relaxed border border-primary-500/10">
                       {feedback.feedbackText}
                     </p>
                   </div>

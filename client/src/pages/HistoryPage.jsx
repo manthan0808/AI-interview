@@ -37,20 +37,20 @@ const HistoryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
       <div className="page-container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-white mb-2">Interview History</h1>
-          <p className="text-dark-400">Review your past interview sessions and track your progress</p>
+          <h1 className="text-3xl font-bold text-black mb-2">Interview History</h1>
+          <p className="text-gray-600">Review your past interview sessions and track your progress</p>
         </motion.div>
 
         {historyLoading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-blue-200 border-t-primary-500 rounded-full animate-spin" />
           </div>
         ) : history.length === 0 ? (
           <motion.div
@@ -58,9 +58,9 @@ const HistoryPage = () => {
             animate={{ opacity: 1 }}
             className="glass-card p-12 text-center"
           >
-            <HiDocumentReport className="text-dark-600 text-5xl mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">No Interviews Yet</h3>
-            <p className="text-dark-400 mb-6">Start your first mock interview to see your history here.</p>
+            <HiDocumentReport className="text-gray-600 text-5xl mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-black mb-2">No Interviews Yet</h3>
+            <p className="text-gray-600 mb-6">Start your first mock interview to see your history here.</p>
             <Link to="/interview" className="btn-primary inline-flex items-center gap-2">
               Start Interview
               <HiChevronRight />
@@ -83,13 +83,13 @@ const HistoryPage = () => {
                     className="glass-card-hover p-5 sm:p-6 flex items-center justify-between gap-4 group block"
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="w-12 h-12 bg-primary-500/10 border border-primary-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <HiBriefcase className="text-primary-400 text-xl" />
+                      <div className="w-12 h-12 bg-blue-50 border border-primary-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <HiBriefcase className="text-blue-500 text-xl" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-white font-semibold truncate">{interview.jobRole}</h3>
+                        <h3 className="text-black font-semibold truncate">{interview.jobRole}</h3>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-dark-400 text-sm flex items-center gap-1">
+                          <span className="text-gray-600 text-sm flex items-center gap-1">
                             <HiClock className="text-xs" />
                             {formatDate(interview.createdAt)}
                           </span>
@@ -110,16 +110,16 @@ const HistoryPage = () => {
                           <div className={`text-2xl font-bold ${getScoreColor(parseFloat(avgScore))}`}>
                             {avgScore}
                           </div>
-                          <div className="text-dark-500 text-xs">Avg Score</div>
+                          <div className="text-gray-500 text-xs">Avg Score</div>
                         </div>
                       )}
                       <div className="text-center hidden sm:block">
-                        <div className="text-lg font-semibold text-dark-200">
+                        <div className="text-lg font-semibold text-gray-800">
                           {interview.answers?.length || 0}/{interview.questions?.length || 0}
                         </div>
-                        <div className="text-dark-500 text-xs">Answered</div>
+                        <div className="text-gray-500 text-xs">Answered</div>
                       </div>
-                      <HiChevronRight className="text-dark-500 text-xl group-hover:text-primary-400 transition-colors" />
+                      <HiChevronRight className="text-gray-500 text-xl group-hover:text-blue-500 transition-colors" />
                     </div>
                   </Link>
                 </motion.div>

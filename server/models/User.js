@@ -32,7 +32,7 @@ const User = {
       email: email.toLowerCase(),
       createdAt: new Date(),
       updatedAt: new Date(),
-      credits: userData.credits || 5,
+      credits: userData.credits || 50,
     };
     const docRef = await getUsersCollection().add(newUser);
     return { _id: docRef.id, ...newUser };

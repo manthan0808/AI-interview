@@ -4,11 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   HiUpload, HiArrowRight, HiArrowLeft, HiCheck,
-  HiLightningBolt, HiStar, HiPaperAirplane, HiChartBar
+  HiLightningBolt, HiStar, HiPaperAirplane, HiChartBar,
+  HiAdjustments, HiCode, HiUserGroup
 } from "react-icons/hi";
 import { analyzeResume, createInterview, submitAnswer, nextQuestion, resetInterview } from "../store/slices/interviewSlice";
 import { updateCredits } from "../store/slices/authSlice";
 import toast from "react-hot-toast";
+
+const PRESETS = [
+  { label: "All Technical", icon: HiCode, tech: 10, hr: 0 },
+  { label: "Balanced", icon: HiAdjustments, tech: 6, hr: 4 },
+  { label: "All HR", icon: HiUserGroup, tech: 0, hr: 10 },
+];
 
 const InterviewPage = () => {
   const dispatch = useDispatch();
@@ -19,12 +26,17 @@ const InterviewPage = () => {
     currentQuestionIndex, submitLoading, latestFeedback, feedbackList, error
   } = useSelector((state) => state.interview);
 
-  // Step 1 state
+  // Step state: 1 = form, 1.5 = question mix, 2 = interview
   const [step, setStep] = useState(1);
   const [jobRole, setJobRole] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [experience, setExperience] = useState("fresher");
   const [resumeFile, setResumeFile] = useState(null);
+
+  // Step 1.5 state
+  const [techCount, setTechCount] = useState(6);
+  const [hrCount, setHrCount] = useState(4);
+  const [activePreset, setActivePreset] = useState(1); // index of PRESETS, -1 for custom
 
   // Step 2 state
   const [currentAnswer, setCurrentAnswer] = useState("");
@@ -36,6 +48,19 @@ const InterviewPage = () => {
     } else {
       toast.error("Please upload a valid PDF file");
     }
+  };
+
+  const handlePresetSelect = (index) => {
+    setActivePreset(index);
+    setTechCount(PRESETS[index].tech);
+    setHrCount(PRESETS[index].hr);
+  };
+
+  const handleTechSlider = (val) => {
+    const parsed = Math.max(0, Math.min(10, Number(val)));
+    setTechCount(parsed);
+    setHrCount(10 - parsed);
+    setActivePreset(-1);
   };
 
   const handleAnalyzeResume = async () => {
@@ -52,6 +77,8 @@ const InterviewPage = () => {
     formData.append("resume", resumeFile);
     formData.append("jobRole", jobRole);
     formData.append("experience", experience);
+    formData.append("techCount", String(techCount));
+    formData.append("hrCount", String(hrCount));
 
     const result = await dispatch(analyzeResume(formData));
 
@@ -123,7 +150,7 @@ const InterviewPage = () => {
   const currentQ = questions[currentQuestionIndex];
 
   return (
-    <div className="min-h-screen bg-dark-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
       <div className="page-container">
         {/* Header */}
         <motion.div
@@ -131,20 +158,38 @@ const InterviewPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-white mb-2">
-            {step === 1 ? "Start Your Interview" : "Mock Interview"}
+          <h1 className="text-3xl font-bold text-black mb-2">
+            {step === 1 && "Start Your Interview"}
+            {step === 1.5 && "Choose Question Mix"}
+            {step === 2 && "Mock Interview"}
           </h1>
-          <p className="text-dark-400">
-            {step === 1
-              ? "Fill in your details and upload your resume to begin"
-              : `Question ${currentQuestionIndex + 1} of ${questions.length}`}
+          <p className="text-gray-600">
+            {step === 1 && "Fill in your details and upload your resume to begin"}
+            {step === 1.5 && "Decide how many Technical and HR questions you want"}
+            {step === 2 && `Question ${currentQuestionIndex + 1} of ${questions.length}`}
           </p>
+
+          {/* Step indicator */}
+          {step !== 2 && (
+            <div className="flex items-center gap-2 mt-4">
+              {[{ n: 1, label: "Details" }, { n: 1.5, label: "Question Mix" }, { n: 2, label: "Interview" }].map((s, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all
+                    ${step === s.n ? "bg-black text-white" : step > s.n ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                    {step > s.n ? <HiCheck className="text-xs" /> : <span>{i + 1}</span>}
+                    {s.label}
+                  </div>
+                  {i < 2 && <div className={`h-px w-6 ${step > s.n ? "bg-green-300" : "bg-gray-200"}`} />}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Progress bar for step 2 */}
           {step === 2 && (
-            <div className="mt-4 w-full bg-dark-800 rounded-full h-2">
+            <div className="mt-4 w-full bg-gray-100 rounded-full h-2">
               <motion.div
-                className="bg-gradient-to-r from-primary-500 to-purple-500 h-2 rounded-full"
+                className="bg-black h-2 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
                 transition={{ duration: 0.3 }}
@@ -166,7 +211,7 @@ const InterviewPage = () => {
               <div className="glass-card p-6 sm:p-8 space-y-6">
                 {/* Job Role */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-200 mb-2">
+                  <label className="block text-sm font-medium text-gray-800 mb-2">
                     Job Role *
                   </label>
                   <input
@@ -180,8 +225,8 @@ const InterviewPage = () => {
 
                 {/* Job Description */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-200 mb-2">
-                    Job Description (optional)
+                  <label className="block text-sm font-medium text-gray-800 mb-2">
+                    Job Description <span className="text-gray-400 font-normal">(optional)</span>
                   </label>
                   <textarea
                     value={jobDescription}
@@ -194,7 +239,7 @@ const InterviewPage = () => {
 
                 {/* Experience Level */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-200 mb-2">
+                  <label className="block text-sm font-medium text-gray-800 mb-2">
                     Experience Level *
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -202,10 +247,10 @@ const InterviewPage = () => {
                       <button
                         key={level}
                         onClick={() => setExperience(level)}
-                        className={`px-4 py-2.5 rounded-xl text-sm font-medium capitalize transition-all duration-200
+                        className={`px-4 py-2.5 rounded-md text-sm font-medium capitalize transition-all duration-200
                           ${experience === level
-                            ? "bg-primary-500/20 border border-primary-500/50 text-primary-300"
-                            : "bg-dark-900/50 border border-dark-700/50 text-dark-400 hover:border-dark-600 hover:text-dark-200"
+                            ? "bg-black text-white"
+                            : "bg-white border border-gray-300 text-gray-700 hover:border-black hover:text-black"
                           }`}
                       >
                         {level}
@@ -216,14 +261,14 @@ const InterviewPage = () => {
 
                 {/* Resume Upload */}
                 <div>
-                  <label className="block text-sm font-medium text-dark-200 mb-2">
+                  <label className="block text-sm font-medium text-gray-800 mb-2">
                     Upload Resume (PDF) *
                   </label>
                   <div
-                    className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300
+                    className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all duration-300
                       ${resumeFile
-                        ? "border-primary-500/50 bg-primary-500/5"
-                        : "border-dark-700/50 hover:border-dark-600 hover:bg-dark-900/30"
+                        ? "border-black bg-gray-50"
+                        : "border-gray-300 hover:border-black"
                       }`}
                     onClick={() => document.getElementById("resume-upload").click()}
                   >
@@ -236,47 +281,188 @@ const InterviewPage = () => {
                     />
                     {resumeFile ? (
                       <div className="flex items-center justify-center gap-3">
-                        <HiCheck className="text-primary-400 text-2xl" />
+                        <HiCheck className="text-black text-2xl" />
                         <div>
-                          <p className="text-white font-medium">{resumeFile.name}</p>
-                          <p className="text-dark-400 text-sm">{(resumeFile.size / 1024).toFixed(1)} KB</p>
+                          <p className="text-black font-medium">{resumeFile.name}</p>
+                          <p className="text-gray-600 text-sm">{(resumeFile.size / 1024).toFixed(1)} KB</p>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <HiUpload className="text-dark-500 text-3xl mx-auto mb-3" />
-                        <p className="text-dark-300 font-medium">Click to upload your resume</p>
-                        <p className="text-dark-500 text-sm mt-1">PDF format, max 5MB</p>
+                        <HiUpload className="text-gray-400 text-3xl mx-auto mb-3" />
+                        <p className="text-gray-700 font-medium">Click to upload your resume</p>
+                        <p className="text-gray-500 text-sm mt-1">PDF format, max 5MB</p>
                       </>
                     )}
                   </div>
                 </div>
 
-                {/* Submit */}
+                {/* Credits info */}
+                <p className="text-center text-gray-600 text-sm bg-gray-100/80 rounded-md py-3 px-4 border border-gray-200">
+                  <HiLightningBolt className="inline text-yellow-500 mr-1" />
+                  You have <span className="text-black font-bold">{user?.credits || 0}</span> credits.
+                  Each answer costs 1 credit — a full 10-question interview costs 10 credits.
+                </p>
+
+                {/* Next: go to question mix */}
                 <button
-                  onClick={handleAnalyzeResume}
-                  disabled={analysisLoading || !jobRole || !resumeFile}
+                  onClick={() => {
+                    if (!jobRole.trim()) return toast.error("Please enter a job role");
+                    if (!resumeFile) return toast.error("Please upload your resume");
+                    setStep(1.5);
+                  }}
+                  disabled={!jobRole || !resumeFile}
                   className="btn-primary w-full flex items-center justify-center gap-2 !py-4"
                 >
-                  {analysisLoading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Analyzing Resume & Generating Questions...
-                    </>
-                  ) : (
-                    <>
-                      <HiLightningBolt />
-                      Analyze Resume & Start Interview
-                    </>
-                  )}
+                  Next: Choose Question Mix
+                  <HiArrowRight />
                 </button>
+              </div>
+            </motion.div>
+          )}
 
-                {/* Credits info */}
-                <p className="text-center text-dark-500 text-sm">
-                  <HiLightningBolt className="inline text-yellow-400" /> You have{" "}
-                  <span className="text-white font-semibold">{user?.credits || 0}</span> credits remaining.
-                  Each answer costs 1 credit.
-                </p>
+          {/* ==================== STEP 1.5: QUESTION MIX ==================== */}
+          {step === 1.5 && (
+            <motion.div
+              key="step1-5"
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="glass-card p-6 sm:p-8 space-y-8">
+
+                {/* Preset buttons */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-800 mb-4 uppercase tracking-wider">
+                    Quick Presets
+                  </label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {PRESETS.map((preset, index) => (
+                      <button
+                        key={preset.label}
+                        onClick={() => handlePresetSelect(index)}
+                        className={`relative flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all duration-200
+                          ${activePreset === index
+                            ? "border-black bg-black text-white shadow-md"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-black"
+                          }`}
+                      >
+                        <preset.icon className={`text-2xl ${activePreset === index ? 'text-white' : 'text-black'}`} />
+                        <span className="font-semibold text-sm">{preset.label}</span>
+                        <span className={`text-xs ${activePreset === index ? "text-gray-300" : "text-gray-500"}`}>
+                          {preset.tech > 0 && `${preset.tech} Tech`}
+                          {preset.tech > 0 && preset.hr > 0 && " · "}
+                          {preset.hr > 0 && `${preset.hr} HR`}
+                        </span>
+                        {activePreset === index && (
+                          <div className="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
+                            <HiCheck className="text-black text-xs" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-gray-200" />
+                  <span className="text-xs text-gray-500 uppercase tracking-wider font-medium flex items-center gap-1">
+                    <HiAdjustments /> Custom Mix
+                  </span>
+                  <div className="flex-1 h-px bg-gray-200" />
+                </div>
+
+                {/* Custom slider */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <HiCode className="text-blue-500 text-sm" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">Technical</p>
+                        <p className="text-xs text-gray-500">Coding, system design, concepts</p>
+                      </div>
+                    </div>
+                    <div className="w-14 h-10 bg-gray-50 border border-gray-300 rounded-md flex items-center justify-center">
+                      <span className="text-xl font-bold text-black">{techCount}</span>
+                    </div>
+                  </div>
+
+                  <input
+                    type="range"
+                    min={0}
+                    max={10}
+                    step={1}
+                    value={techCount}
+                    onChange={(e) => handleTechSlider(e.target.value)}
+                    className="w-full h-2 rounded-full appearance-none cursor-pointer accent-black"
+                    style={{ background: `linear-gradient(to right, #000 ${techCount * 10}%, #e5e7eb ${techCount * 10}%)` }}
+                  />
+
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                        <HiUserGroup className="text-green-600 text-sm" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">HR / Behavioral</p>
+                        <p className="text-xs text-gray-500">Soft skills, situational, culture fit</p>
+                      </div>
+                    </div>
+                    <div className="w-14 h-10 bg-gray-50 border border-gray-300 rounded-md flex items-center justify-center">
+                      <span className="text-xl font-bold text-black">{hrCount}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Summary pill */}
+                <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 flex items-center justify-between">
+                  <div className="flex gap-4">
+                    {techCount > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                        <span className="text-sm font-medium text-gray-700">{techCount} Technical</span>
+                      </div>
+                    )}
+                    {hrCount > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                        <span className="text-sm font-medium text-gray-700">{hrCount} HR</span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-sm text-gray-500">10 questions total · 10 credits</span>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setStep(1)}
+                    className="btn-secondary flex items-center gap-2 !px-5"
+                  >
+                    <HiArrowLeft /> Back
+                  </button>
+                  <button
+                    onClick={handleAnalyzeResume}
+                    disabled={analysisLoading || (techCount === 0 && hrCount === 0)}
+                    className="btn-primary flex-1 flex items-center justify-center gap-2 !py-4"
+                  >
+                    {analysisLoading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Analyzing Resume &amp; Generating Questions...
+                      </>
+                    ) : (
+                      <>
+                        <HiLightningBolt />
+                        Generate {techCount + hrCount} Questions &amp; Start
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}
@@ -298,19 +484,19 @@ const InterviewPage = () => {
                 className="glass-card p-6 sm:p-8"
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide
                     ${currentQ.type === "technical"
-                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                      : "bg-green-500/10 text-green-400 border border-green-500/20"
+                      ? "bg-blue-50 text-blue-600 border border-blue-100"
+                      : "bg-green-50 text-green-600 border border-green-100"
                     }`}>
-                    {currentQ.type}
+                    {currentQ.type === "technical" ? "💻 Technical" : "🤝 HR / Behavioral"}
                   </span>
-                  <span className="text-dark-500 text-sm">
+                  <span className="text-gray-400 text-sm">
                     Question {currentQuestionIndex + 1} of {questions.length}
                   </span>
                 </div>
 
-                <h2 className="text-xl sm:text-2xl font-bold text-white leading-relaxed">
+                <h2 className="text-xl sm:text-2xl font-bold text-black leading-relaxed">
                   {currentQ.question}
                 </h2>
               </motion.div>
@@ -318,7 +504,7 @@ const InterviewPage = () => {
               {/* Answer Input (only show if no feedback yet) */}
               {!latestFeedback && (
                 <div className="glass-card p-6 sm:p-8">
-                  <label className="block text-sm font-medium text-dark-200 mb-3">
+                  <label className="block text-sm font-medium text-gray-800 mb-3">
                     Your Answer
                   </label>
                   <textarea
@@ -354,18 +540,18 @@ const InterviewPage = () => {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="glass-card p-6 sm:p-8 border-primary-500/20"
+                  className="glass-card p-6 sm:p-8"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-white">AI Feedback</h3>
-                    <div className="flex items-center gap-1.5 bg-primary-500/10 px-3 py-1.5 rounded-full">
-                      <HiStar className="text-yellow-400" />
-                      <span className="text-white font-bold">{latestFeedback.rating}</span>
-                      <span className="text-dark-400 text-sm">/10</span>
+                    <h3 className="text-lg font-bold text-black">AI Feedback</h3>
+                    <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full">
+                      <HiStar className="text-yellow-500" />
+                      <span className="text-black font-bold">{latestFeedback.rating}</span>
+                      <span className="text-gray-500 text-sm">/10</span>
                     </div>
                   </div>
 
-                  <p className="text-dark-200 leading-relaxed mb-6">
+                  <p className="text-gray-700 leading-relaxed mb-6">
                     {latestFeedback.feedbackText}
                   </p>
 

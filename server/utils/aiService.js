@@ -5,9 +5,10 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 /**
  * Generate interview questions from resume text and job details
  */
-const generateQuestions = async (resumeText, jobRole, experience) => {
+const generateQuestions = async (resumeText, jobRole, experience, techCount = 6, hrCount = 4) => {
   try {
-    const prompt = `You are an expert technical interviewer with 15+ years of experience. Based on the following resume and job details, generate exactly 10 interview questions — 6 technical questions and 4 HR/behavioral questions.
+    const totalQuestions = techCount + hrCount;
+    const prompt = `You are an expert technical interviewer with 15+ years of experience. Based on the following resume and job details, generate exactly ${totalQuestions} interview questions — ${techCount} technical question${techCount !== 1 ? "s" : ""} and ${hrCount} HR/behavioral question${hrCount !== 1 ? "s" : ""}.
 
 Job Role: ${jobRole}
 Experience Level: ${experience}
@@ -16,9 +17,11 @@ Resume:
 ${resumeText}
 
 IMPORTANT: Return ONLY a valid JSON array with no additional text, markdown, or explanation. Each object must have these exact fields:
-- "id" (number, 1-10)
+- "id" (number, 1-${totalQuestions})
 - "question" (string)
 - "type" (string, either "technical" or "hr")
+
+You MUST generate exactly ${techCount} questions with type "technical" and exactly ${hrCount} questions with type "hr".
 
 Example format:
 [{"id":1,"question":"...","type":"technical"},{"id":2,"question":"...","type":"hr"}]`;

@@ -16,14 +16,15 @@ const PricingPage = () => {
       id: "free",
       name: "Free",
       price: "₹0",
-      credits: 5,
-      description: "Get started with basic features",
+      credits: 50,
+      description: "Start with 5 full interviews for free",
       icon: HiLightningBolt,
       color: "from-gray-500 to-gray-600",
       features: [
-        "5 AI Credits",
+        "50 AI Credits (5 full interviews)",
         "Resume Analysis",
         "AI-Generated Questions",
+        "Custom Question Mix",
         "Basic Feedback",
         "Interview History",
       ],
@@ -153,25 +154,25 @@ const PricingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 pt-20 pb-12">
+    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
       <div className="page-container">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+          <h1 className="text-3xl sm:text-4xl font-bold text-black mb-4">
             Choose Your <span className="gradient-text">Plan</span>
           </h1>
-          <p className="text-dark-400 text-lg max-w-xl mx-auto">
+          <p className="text-gray-600 text-lg max-w-xl mx-auto">
             Start free and scale up as you prepare for more interviews.
             Each credit lets you submit one answer and receive AI feedback.
           </p>
           {isAuthenticated && user && (
-            <div className="inline-flex items-center gap-2 bg-dark-800/80 border border-dark-700/50 px-4 py-2 rounded-full mt-6">
+            <div className="inline-flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-full mt-6">
               <HiLightningBolt className="text-yellow-400" />
-              <span className="text-sm text-dark-200">
-                Current balance: <span className="text-white font-bold">{user.credits}</span> credits
+              <span className="text-sm text-gray-800">
+                Current balance: <span className="text-black font-bold">{user.credits}</span> credits
               </span>
             </div>
           )}
@@ -188,25 +189,25 @@ const PricingPage = () => {
                 ${plan.popular ? "border-primary-500/50 shadow-lg shadow-primary-500/10" : ""}`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary-500 to-purple-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary-500 to-purple-500 text-black text-xs font-bold px-4 py-1 rounded-full">
                   MOST POPULAR
                 </div>
               )}
 
               <div className="text-center mb-6">
                 <div className={`w-12 h-12 bg-gradient-to-br ${plan.color} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
-                  <plan.icon className="text-white text-xl" />
+                  <plan.icon className="text-black text-xl" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
-                <p className="text-dark-400 text-sm mb-4">{plan.description}</p>
+                <h3 className="text-xl font-bold text-black mb-1">{plan.name}</h3>
+                <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
                 <div className="text-4xl font-extrabold gradient-text">{plan.price}</div>
-                <p className="text-dark-400 text-sm mt-1">{plan.credits} credits</p>
+                <p className="text-gray-600 text-sm mt-1">{plan.credits} credits</p>
               </div>
 
               <ul className="space-y-3 mb-8 flex-1">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2.5 text-sm text-dark-300">
-                    <HiCheck className="text-primary-400 flex-shrink-0" />
+                  <li key={feature} className="flex items-center gap-2.5 text-sm text-gray-700">
+                    <HiCheck className="text-blue-500 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
@@ -218,12 +219,12 @@ const PricingPage = () => {
                 className={`w-full py-3 rounded-xl font-semibold transition-all duration-300
                   ${plan.popular
                     ? "btn-primary"
-                    : "border border-dark-600 text-dark-200 hover:border-primary-500/30 hover:text-white hover:bg-primary-500/5"
+                    : "border border-gray-300 text-gray-800 hover:border-blue-200 hover:text-black hover:bg-primary-500/5"
                   } disabled:opacity-50`}
               >
                 {loading === plan.id ? (
                   <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
                     Processing...
                   </span>
                 ) : plan.id === "free" ? (
@@ -243,10 +244,10 @@ const PricingPage = () => {
           transition={{ delay: 0.5 }}
           className="max-w-2xl mx-auto mt-16 text-center"
         >
-          <p className="text-dark-500 text-sm">
+          <p className="text-gray-500 text-sm">
             Credits never expire. Each answer submission costs 1 credit.
             Payments are securely processed by Razorpay. Need help?{" "}
-            <a href="mailto:support@interviewai.com" className="text-primary-400 hover:underline">
+            <a href="mailto:support@interviewai.com" className="text-blue-500 hover:underline">
               Contact us
             </a>
           </p>

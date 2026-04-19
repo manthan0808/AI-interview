@@ -27,7 +27,7 @@ const googleAuth = async (req, res) => {
         name: name || "User",
         email,
         photoURL: picture || "",
-        credits: 5,
+        credits: 50,
       });
       console.log(`✅ New user created: ${email}`);
     }
@@ -104,7 +104,7 @@ const register = async (req, res) => {
       email,
       password: hashedPassword,
       photoURL: defaultPhotoURL,
-      credits: 5,
+      credits: 50,
     });
 
     console.log(`✅ New user created via Email/Password: ${email}`);
