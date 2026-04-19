@@ -13,7 +13,7 @@ const analyzeResume = async (req, res) => {
       return res.status(400).json({ message: "Please upload a PDF resume" });
     }
 
-    const { jobRole, experience, techCount, hrCount } = req.body;
+    const { jobRole, experience, techCount, hrCount, persona } = req.body;
 
     if (!jobRole) {
       return res.status(400).json({ message: "Job role is required" });
@@ -35,7 +35,7 @@ const analyzeResume = async (req, res) => {
     }
 
     // Generate questions via AI
-    const questions = await generateQuestions(finalResumeText, jobRole, experience || "fresher", finalTech, finalHr);
+    const questions = await generateQuestions(finalResumeText, jobRole, experience || "fresher", finalTech, finalHr, persona || "friendly");
 
     res.status(200).json({
       message: "Resume analyzed successfully",
@@ -54,7 +54,7 @@ const analyzeResume = async (req, res) => {
  */
 const createInterview = async (req, res) => {
   try {
-    const { jobRole, jobDescription, experience, resumeText, questions } = req.body;
+    const { jobRole, jobDescription, experience, resumeText, questions, persona } = req.body;
 
     if (!jobRole || !questions || questions.length === 0) {
       return res.status(400).json({ message: "Job role and questions are required" });
@@ -69,6 +69,7 @@ const createInterview = async (req, res) => {
       questions,
       answers: [],
       feedback: [],
+      persona: persona || "friendly",
       status: "in-progress",
     });
 
@@ -112,7 +113,7 @@ const submitAnswer = async (req, res) => {
     }
 
     // Get AI feedback
-    const aiFeedback = await generateFeedback(questionObj.question, answer);
+    const aiFeedback = await generateFeedback(questionObj.question, answer, interview.persona || "friendly");
 
     // Update interview arrays
     const updatedAnswers = [...interview.answers, {
@@ -125,6 +126,7 @@ const submitAnswer = async (req, res) => {
       questionId,
       feedbackText: aiFeedback.feedbackText,
       rating: aiFeedback.rating,
+      categories: aiFeedback.categories,
     }];
 
     // Check if all questions answered
@@ -149,6 +151,7 @@ const submitAnswer = async (req, res) => {
         questionId,
         feedbackText: aiFeedback.feedbackText,
         rating: aiFeedback.rating,
+        categories: aiFeedback.categories,
       },
       remainingCredits,
       interviewStatus: status,

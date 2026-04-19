@@ -4,8 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import {
   HiArrowLeft, HiBriefcase, HiStar, HiTrendingUp,
-  HiTrendingDown, HiCheckCircle, HiXCircle
+  HiTrendingDown, HiCheckCircle, HiXCircle, HiInformationCircle
 } from "react-icons/hi";
+import {
+  Radar, RadarChart, PolarGrid, PolarAngleAxis,
+  PolarRadiusAxis, ResponsiveContainer
+} from 'recharts';
 import { fetchInterviewById } from "../store/slices/interviewSlice";
 
 const ReportPage = () => {
@@ -60,6 +64,15 @@ const ReportPage = () => {
     return "bg-red-500/10 border-red-500/20";
   };
 
+  // Aggregated analytics for Radar Chart
+  const radarData = report.feedback.length > 0 ? [
+    { subject: 'Technical', A: report.feedback.reduce((sum, f) => sum + (f.categories?.technical || 0), 0) / report.feedback.length, fullMark: 10 },
+    { subject: 'Communication', A: report.feedback.reduce((sum, f) => sum + (f.categories?.communication || 0), 0) / report.feedback.length, fullMark: 10 },
+    { subject: 'STAR/Context', A: report.feedback.reduce((sum, f) => sum + (f.categories?.star_context || 0), 0) / report.feedback.length, fullMark: 10 },
+    { subject: 'Logic', A: report.feedback.reduce((sum, f) => sum + (f.categories?.logic || 0), 0) / report.feedback.length, fullMark: 10 },
+    { subject: 'Confidence', A: report.feedback.reduce((sum, f) => sum + (f.categories?.confidence || 0), 0) / report.feedback.length, fullMark: 10 },
+  ] : [];
+
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-12">
       <div className="page-container max-w-4xl">
@@ -91,34 +104,67 @@ const ReportPage = () => {
           </div>
         </motion.div>
 
-        {/* Score Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8"
-        >
-          <div className="glass-card p-6 text-center">
-            <div className={`text-4xl font-extrabold mb-1 ${typeof avgScore === 'number' || !isNaN(parseFloat(avgScore)) ? getScoreColor(parseFloat(avgScore)) : 'text-gray-600'}`}>
-              {avgScore}
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Radar Chart */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-2 glass-card p-6"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <HiTrendingUp className="text-blue-500" />
+              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider">Performance Breakdown</h3>
             </div>
-            <div className="text-gray-600 text-sm">Average Score</div>
-          </div>
-          <div className="glass-card p-6 text-center">
-            <div className="text-4xl font-extrabold text-green-400 mb-1 flex items-center justify-center gap-1">
-              <HiTrendingUp className="text-2xl" />
-              {strengths.length}
+            <div className="h-[300px] w-full">
+              {radarData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                    <PolarGrid stroke="#e5e7eb" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 12 }} />
+                    <PolarRadiusAxis angle={30} domain={[0, 10]} tick={{ fill: '#9ca3af', fontSize: 10 }} />
+                    <Radar
+                      name="Score"
+                      dataKey="A"
+                      stroke="#000"
+                      fill="#000"
+                      fillOpacity={0.1}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-400 text-sm italic">
+                  Complete an interview to see aggregate analytics
+                </div>
+              )}
             </div>
-            <div className="text-gray-600 text-sm">Strong Answers</div>
-          </div>
-          <div className="glass-card p-6 text-center">
-            <div className="text-4xl font-extrabold text-orange-400 mb-1 flex items-center justify-center gap-1">
-              <HiTrendingDown className="text-2xl" />
-              {weaknesses.length}
+          </motion.div>
+
+          {/* Score Overview Stats */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-4"
+          >
+            <div className="glass-card p-6 text-center h-full flex flex-col justify-center">
+               <div className={`text-5xl font-black mb-2 ${typeof avgScore === 'number' || !isNaN(parseFloat(avgScore)) ? getScoreColor(parseFloat(avgScore)) : 'text-gray-600'}`}>
+                {avgScore}
+              </div>
+              <div className="text-gray-500 text-sm font-medium">Global Rating</div>
+              <div className="mt-6 flex items-center justify-between text-left">
+                <div>
+                  <div className="text-xl font-bold text-green-500">{strengths.length}</div>
+                  <div className="text-[10px] text-gray-500 uppercase font-bold">Strong</div>
+                </div>
+                <div className="w-px h-8 bg-gray-200" />
+                <div>
+                  <div className="text-xl font-bold text-orange-500">{weaknesses.length}</div>
+                  <div className="text-[10px] text-gray-500 uppercase font-bold">Needs Prep</div>
+                </div>
+              </div>
             </div>
-            <div className="text-gray-600 text-sm">Needs Improvement</div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
         {/* Questions & Answers */}
         <div className="space-y-4">

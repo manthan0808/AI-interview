@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   HiUpload, HiArrowRight, HiArrowLeft, HiCheck,
   HiLightningBolt, HiStar, HiPaperAirplane, HiChartBar,
-  HiAdjustments, HiCode, HiUserGroup
+  HiAdjustments, HiCode, HiUserGroup, HiMicrophone, HiClock, HiStop
 } from "react-icons/hi";
+import { FaUserTie, FaUserGraduate } from "react-icons/fa";
 import { analyzeResume, createInterview, submitAnswer, nextQuestion, resetInterview } from "../store/slices/interviewSlice";
 import { updateCredits } from "../store/slices/authSlice";
 import toast from "react-hot-toast";
@@ -36,10 +37,42 @@ const InterviewPage = () => {
   // Step 1.5 state
   const [techCount, setTechCount] = useState(6);
   const [hrCount, setHrCount] = useState(4);
-  const [activePreset, setActivePreset] = useState(1); // index of PRESETS, -1 for custom
+  const [activePreset, setActivePreset] = useState(1);
+  const [persona, setPersona] = useState("friendly"); // friendly or strict
+  const [timedMode, setTimedMode] = useState(false);
 
   // Step 2 state
   const [currentAnswer, setCurrentAnswer] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(120);
+  const [timerActive, setTimerActive] = useState(false);
+
+  // Voice STT Setup
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+  if (recognition) {
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0])
+        .map(result => result.transcript)
+        .join('');
+      setCurrentAnswer(transcript);
+    };
+  }
+
+  const toggleRecording = () => {
+    if (!recognition) return toast.error("Speech recognition not supported in this browser");
+    if (isRecording) {
+      recognition.stop();
+      setIsRecording(false);
+    } else {
+      recognition.start();
+      setIsRecording(true);
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -79,6 +112,7 @@ const InterviewPage = () => {
     formData.append("experience", experience);
     formData.append("techCount", String(techCount));
     formData.append("hrCount", String(hrCount));
+    formData.append("persona", persona);
 
     const result = await dispatch(analyzeResume(formData));
 
@@ -93,11 +127,16 @@ const InterviewPage = () => {
           experience,
           resumeText: result.payload.resumeText,
           questions: result.payload.questions,
+          persona,
         })
       );
 
       if (createInterview.fulfilled.match(createResult)) {
         setStep(2);
+        if (timedMode) {
+          setTimeLeft(120);
+          setTimerActive(true);
+        }
       } else {
         toast.error("Failed to create interview session");
       }
@@ -105,6 +144,20 @@ const InterviewPage = () => {
       toast.error(result.payload || "Failed to analyze resume");
     }
   };
+
+  // Timer side effect
+  useEffect(() => {
+    let interval = null;
+    if (timerActive && timeLeft > 0 && !latestFeedback && !submitLoading) {
+      interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && timerActive && !latestFeedback && !submitLoading) {
+      handleSubmitAnswer();
+      setTimerActive(false);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, timeLeft, latestFeedback, submitLoading]);
 
   const handleSubmitAnswer = async () => {
     if (!currentAnswer.trim()) {
@@ -137,6 +190,10 @@ const InterviewPage = () => {
   const handleNextQuestion = () => {
     dispatch(nextQuestion());
     setCurrentAnswer("");
+    if (timedMode) {
+      setTimeLeft(120);
+      setTimerActive(true);
+    }
   };
 
   const handleFinishInterview = () => {
@@ -365,6 +422,60 @@ const InterviewPage = () => {
                   </div>
                 </div>
 
+                {/* Persona Selection */}
+                <div className="space-y-4">
+                  <label className="block text-sm font-semibold text-gray-800 uppercase tracking-wider">
+                    Interviewer Persona
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => setPersona("friendly")}
+                      className={`flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all
+                        ${persona === "friendly" 
+                          ? "border-black bg-black text-white shadow-md" 
+                          : "border-gray-200 bg-white text-gray-700 hover:border-black"}`}
+                    >
+                      <FaUserGraduate className="text-xl" />
+                      <div className="text-left">
+                        <p className="font-bold text-sm">Friendly HR</p>
+                        <p className={`text-[10px] ${persona === "friendly" ? "text-gray-300" : "text-gray-500"}`}>Encouraging & Behavioral</p>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => setPersona("strict")}
+                      className={`flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all
+                        ${persona === "strict" 
+                          ? "border-black bg-black text-white shadow-md" 
+                          : "border-gray-200 bg-white text-gray-700 hover:border-black"}`}
+                    >
+                      <FaUserTie className="text-xl" />
+                      <div className="text-left">
+                        <p className="font-bold text-sm">Strict FAANG</p>
+                        <p className={`text-[10px] ${persona === "strict" ? "text-gray-300" : "text-gray-500"}`}>Deep Technical Rigor</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Timed Mode Toggle */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-300 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center">
+                      <HiClock className="text-gray-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-black">Timed Stress-Test</p>
+                      <p className="text-xs text-gray-500">120 seconds per answer</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setTimedMode(!timedMode)}
+                    className={`w-12 h-6 rounded-full transition-all relative ${timedMode ? "bg-black" : "bg-gray-300"}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${timedMode ? "left-7" : "left-1"}`} />
+                  </button>
+                </div>
+
                 {/* Divider */}
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-px bg-gray-200" />
@@ -494,6 +605,12 @@ const InterviewPage = () => {
                   <span className="text-gray-400 text-sm">
                     Question {currentQuestionIndex + 1} of {questions.length}
                   </span>
+                  {timedMode && (
+                    <div className={`ml-auto flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border ${timeLeft < 20 ? "bg-red-50 text-red-600 border-red-100" : "bg-gray-50 text-gray-600 border-gray-100"}`}>
+                      <HiClock className={timeLeft < 20 ? "animate-pulse" : ""} />
+                      {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                    </div>
+                  )}
                 </div>
 
                 <h2 className="text-xl sm:text-2xl font-bold text-black leading-relaxed">
@@ -504,13 +621,25 @@ const InterviewPage = () => {
               {/* Answer Input (only show if no feedback yet) */}
               {!latestFeedback && (
                 <div className="glass-card p-6 sm:p-8">
-                  <label className="block text-sm font-medium text-gray-800 mb-3">
-                    Your Answer
-                  </label>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="block text-sm font-medium text-gray-800">
+                      Your Answer
+                    </label>
+                    <button
+                      onClick={toggleRecording}
+                      className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all
+                        ${isRecording 
+                          ? "bg-red-500 text-white animate-pulse" 
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"}`}
+                    >
+                      {isRecording ? <HiStop /> : <HiMicrophone />}
+                      {isRecording ? "Stop Recording" : "Voice Answer"}
+                    </button>
+                  </div>
                   <textarea
                     value={currentAnswer}
                     onChange={(e) => setCurrentAnswer(e.target.value)}
-                    placeholder="Type your answer here... Be as detailed as possible."
+                    placeholder="Type or speak your answer here... Be as detailed as possible."
                     rows={6}
                     className="textarea-field mb-4"
                     disabled={submitLoading}

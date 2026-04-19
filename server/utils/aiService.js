@@ -5,10 +5,14 @@ const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 /**
  * Generate interview questions from resume text and job details
  */
-const generateQuestions = async (resumeText, jobRole, experience, techCount = 6, hrCount = 4) => {
+const generateQuestions = async (resumeText, jobRole, experience, techCount = 6, hrCount = 4, persona = "friendly") => {
   try {
+    const personaStyle = persona === "strict" 
+      ? "a Strict FAANG Senior Engineer who focuses on deep technical rigor, performance, and scalability" 
+      : "a Friendly HR Manager who focuses on culture fit, storytelling, and soft skills";
+
     const totalQuestions = techCount + hrCount;
-    const prompt = `You are an expert technical interviewer with 15+ years of experience. Based on the following resume and job details, generate exactly ${totalQuestions} interview questions — ${techCount} technical question${techCount !== 1 ? "s" : ""} and ${hrCount} HR/behavioral question${hrCount !== 1 ? "s" : ""}.
+    const prompt = `You are ${personaStyle}. Based on the following resume and job details, generate exactly ${totalQuestions} interview questions — ${techCount} technical question${techCount !== 1 ? "s" : ""} and ${hrCount} HR/behavioral question${hrCount !== 1 ? "s" : ""}.
 
 Job Role: ${jobRole}
 Experience Level: ${experience}
@@ -69,17 +73,44 @@ Example format:
 /**
  * Generate feedback for a single answer
  */
-const generateFeedback = async (question, answer) => {
+const generateFeedback = async (question, answer, persona = "friendly") => {
   try {
-    const prompt = `You are an expert interviewer evaluating a candidate's response.
+    const questionType = question.toLowerCase().includes("technical") ? "technical" : "hr";
+    
+    const personaStyle = persona === "strict" 
+      ? "a Strict FAANG Senior Engineer who is very critical, looks for perfection, and values efficiency. Be blunt in feedback." 
+      : "a Friendly HR Manager who is encouraging, positive, and values culture fit.";
 
+    const starLogic = questionType === "hr" 
+      ? "Specifically evaluate if the user used the STAR (Situation, Task, Action, Result) method. Mention which parts were missing in the feedbackText." 
+      : "Evaluate technical depth and accuracy.";
+
+    const prompt = `You are ${personaStyle}.
+    
 Question: "${question}"
 Candidate's Answer: "${answer}"
 
-Provide constructive feedback in exactly this JSON format (no markdown, no code blocks, just raw JSON):
-{"feedbackText":"3-4 sentences of constructive feedback here","rating":7}
+${starLogic}
 
-The rating must be a number from 1 to 10. Be fair but constructive. Mention strengths and areas for improvement.`;
+Provide constructive feedback in exactly this JSON format (no markdown, no code blocks, just raw JSON):
+{
+  "feedbackText": "3-4 sentences of constructive feedback here",
+  "rating": 7,
+  "categories": {
+    "technical": 8,
+    "communication": 7,
+    "star_context": 5,
+    "logic": 6,
+    "confidence": 9
+  }
+}
+
+The rating must be a number from 1 to 10. The 'categories' object must contain numbers 1-10 for each key.
+- technical: technical depth or behavioral specificity.
+- communication: clarity and tone.
+- star_context: for HR, score the STAR method use. For tech, context provided.
+- logic: problem solving approach.
+- confidence: tone and conviction.`;
 
     const response = await axios.post(
       OPENROUTER_URL,
@@ -93,7 +124,7 @@ The rating must be a number from 1 to 10. Be fair but constructive. Mention stre
           { role: "user", content: prompt },
         ],
         temperature: 0.6,
-        max_tokens: 500,
+        max_tokens: 600,
       },
       {
         headers: {
