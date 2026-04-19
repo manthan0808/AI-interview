@@ -113,6 +113,15 @@ const interviewSlice = createSlice({
         state.latestFeedback = null;
       }
     },
+    resumeExistingInterview: (state, action) => {
+      const interview = action.payload;
+      state.currentInterview = interview;
+      state.questions = interview.questions || [];
+      state.answers = interview.answers || [];
+      state.feedbackList = interview.feedback || [];
+      state.currentQuestionIndex = interview.answers ? interview.answers.length : 0;
+      state.latestFeedback = null;
+    },
     clearError: (state) => {
       state.error = null;
     },
@@ -184,5 +193,5 @@ const interviewSlice = createSlice({
   },
 });
 
-export const { resetInterview, nextQuestion, clearError } = interviewSlice.actions;
+export const { resetInterview, nextQuestion, resumeExistingInterview, clearError } = interviewSlice.actions;
 export default interviewSlice.reducer;

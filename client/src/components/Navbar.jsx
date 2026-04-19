@@ -11,6 +11,16 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentInterview } = useSelector((state) => state.interview);
+
+  const handleLinkClick = (e, path) => {
+    if (currentInterview && path !== "/interview" && !isActive(path)) {
+      e.preventDefault();
+      toast.error("Finish or Leave your interview first!");
+    } else {
+      setMobileOpen(false);
+    }
+  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -50,9 +60,12 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
+                onClick={(e) => handleLinkClick(e, link.path)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
                   ${isActive(link.path)
                     ? "text-blue-500 bg-blue-50"
+                    : currentInterview && link.path !== "/interview"
+                    ? "text-gray-400 cursor-not-allowed"
                     : "text-gray-600 hover:text-black hover:bg-gray-100"
                   }`}
               >
@@ -129,10 +142,12 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  onClick={() => setMobileOpen(false)}
+                  onClick={(e) => handleLinkClick(e, link.path)}
                   className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-all
                     ${isActive(link.path)
                       ? "text-blue-500 bg-blue-50"
+                      : currentInterview && link.path !== "/interview"
+                      ? "text-gray-400"
                       : "text-gray-600 hover:text-black hover:bg-gray-100"
                     }`}
                 >

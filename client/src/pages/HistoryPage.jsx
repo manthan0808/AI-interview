@@ -2,16 +2,25 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { HiBriefcase, HiClock, HiChevronRight, HiDocumentReport } from "react-icons/hi";
-import { fetchHistory } from "../store/slices/interviewSlice";
+import { HiBriefcase, HiClock, HiChevronRight, HiDocumentReport, HiPlay } from "react-icons/hi";
+import { fetchHistory, resumeExistingInterview } from "../store/slices/interviewSlice";
+import { useNavigate } from "react-router-dom";
 
 const HistoryPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { history, historyLoading } = useSelector((state) => state.interview);
 
   useEffect(() => {
     dispatch(fetchHistory());
   }, [dispatch]);
+
+  const handleResume = (e, interview) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(resumeExistingInterview(interview));
+    navigate("/interview");
+  };
 
   const formatDate = (dateStr) => {
     return new Date(dateStr).toLocaleDateString("en-IN", {
@@ -96,30 +105,41 @@ const HistoryPage = () => {
                           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase
                             ${interview.status === "completed"
                               ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                              : "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20"
+                              : "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
                             }`}>
-                            {interview.status}
+                            {interview.status === "completed" ? "Completed" : "In Progress"}
                           </span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-4 flex-shrink-0">
-                      {avgScore && (
-                        <div className="text-center hidden sm:block">
-                          <div className={`text-2xl font-bold ${getScoreColor(parseFloat(avgScore))}`}>
-                            {avgScore}
+                      {interview.status === "in-progress" ? (
+                        <button
+                          onClick={(e) => handleResume(e, interview)}
+                          className="btn-primary !py-2 !px-4 text-xs flex items-center gap-2"
+                        >
+                          <HiPlay /> Resume
+                        </button>
+                      ) : (
+                        <>
+                          {avgScore && (
+                            <div className="text-center hidden sm:block">
+                              <div className={`text-2xl font-bold ${getScoreColor(parseFloat(avgScore))}`}>
+                                {avgScore}
+                              </div>
+                              <div className="text-gray-500 text-xs">Avg Score</div>
+                            </div>
+                          )}
+                          <div className="text-center hidden sm:block">
+                            <div className="text-lg font-semibold text-gray-800">
+                              {interview.answers?.length || 0}/{interview.questions?.length || 0}
+                            </div>
+                            <div className="text-gray-500 text-xs">Answered</div>
                           </div>
-                          <div className="text-gray-500 text-xs">Avg Score</div>
-                        </div>
+                          <HiChevronRight className="text-gray-500 text-xl group-hover:text-blue-500 transition-colors" />
+                        </>
                       )}
-                      <div className="text-center hidden sm:block">
-                        <div className="text-lg font-semibold text-gray-800">
-                          {interview.answers?.length || 0}/{interview.questions?.length || 0}
-                        </div>
-                        <div className="text-gray-500 text-xs">Answered</div>
-                      </div>
-                      <HiChevronRight className="text-gray-500 text-xl group-hover:text-blue-500 transition-colors" />
                     </div>
                   </Link>
                 </motion.div>

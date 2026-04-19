@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -48,12 +48,17 @@ const InterviewPage = () => {
   const [timerActive, setTimerActive] = useState(false);
 
   // Voice STT Setup
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+  const recognition = useMemo(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return null;
+    const rec = new SpeechRecognition();
+    rec.continuous = true;
+    rec.interimResults = true;
+    return rec;
+  }, []);
 
-  if (recognition) {
-    recognition.continuous = true;
-    recognition.interimResults = true;
+  useEffect(() => {
+    if (!recognition) return;
     recognition.onresult = (event) => {
       const transcript = Array.from(event.results)
         .map(result => result[0])
@@ -61,13 +66,21 @@ const InterviewPage = () => {
         .join('');
       setCurrentAnswer(transcript);
     };
-  }
+    
+    recognition.onerror = (event) => {
+      console.error("Speech Recognition Error:", event.error);
+      setIsRecording(false);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+  }, [recognition]);
 
   const toggleRecording = () => {
     if (!recognition) return toast.error("Speech recognition not supported in this browser");
     if (isRecording) {
       recognition.stop();
-      setIsRecording(false);
     } else {
       recognition.start();
       setIsRecording(true);
@@ -203,6 +216,21 @@ const InterviewPage = () => {
     }
   };
 
+  const handleLeaveInterview = () => {
+    if (window.confirm("Are you sure you want to leave? Your progress will be saved in your history and you can resume later.")) {
+      dispatch(resetInterview());
+      navigate("/history");
+      toast.success("Interview paused. Check History to resume.");
+    }
+  };
+
+  // Auto-resume logic
+  useEffect(() => {
+    if (currentInterview && step !== 2) {
+      setStep(2);
+    }
+  }, [currentInterview, step]);
+
   const isLastQuestion = currentQuestionIndex >= questions.length - 1;
   const currentQ = questions[currentQuestionIndex];
 
@@ -215,16 +243,29 @@ const InterviewPage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-black mb-2">
-            {step === 1 && "Start Your Interview"}
-            {step === 1.5 && "Choose Question Mix"}
-            {step === 2 && "Mock Interview"}
-          </h1>
-          <p className="text-gray-600">
-            {step === 1 && "Fill in your details and upload your resume to begin"}
-            {step === 1.5 && "Decide how many Technical and HR questions you want"}
-            {step === 2 && `Question ${currentQuestionIndex + 1} of ${questions.length}`}
-          </p>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h1 className="text-3xl font-bold text-black mb-2">
+                {step === 1 && "Start Your Interview"}
+                {step === 1.5 && "Choose Question Mix"}
+                {step === 2 && "Mock Interview"}
+              </h1>
+              <p className="text-gray-600">
+                {step === 1 && "Fill in your details and upload your resume to begin"}
+                {step === 1.5 && "Decide how many Technical and HR questions you want"}
+                {step === 2 && `Question ${currentQuestionIndex + 1} of ${questions.length}`}
+              </p>
+            </div>
+            
+            {(step === 2 || currentInterview) && (
+              <button
+                onClick={handleLeaveInterview}
+                className="btn-secondary !text-red-500 hover:!bg-red-50 border-red-200 !px-4 !py-2 flex items-center gap-2"
+              >
+                <HiX /> Leave Interview
+              </button>
+            )}
+          </div>
 
           {/* Step indicator */}
           {step !== 2 && (

@@ -168,7 +168,9 @@ const ReportPage = () => {
 
         {/* Questions & Answers */}
         <div className="space-y-4">
-          {report.questions.map((q, index) => {
+          {report.questions
+            .filter(q => report.status === 'completed' || report.answers.some(a => a.questionId === q.id))
+            .map((q, index) => {
             const answer = report.answers.find((a) => a.questionId === q.id);
             const feedback = report.feedback.find((f) => f.questionId === q.id);
 
