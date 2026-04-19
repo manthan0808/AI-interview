@@ -620,14 +620,45 @@ const InterviewPage = () => {
           )}
 
           {/* ==================== STEP 2: INTERVIEW ==================== */}
-          {step === 2 && currentQ && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              className="max-w-3xl mx-auto space-y-6"
-            >
+          {step === 2 && (
+            <>
+              {!currentQ && questions.length > 0 && currentQuestionIndex >= questions.length ? (
+                /* Interview Concluded Fallback */
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="max-w-xl mx-auto glass-card p-12 text-center"
+                >
+                  <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <HiCheck className="text-green-500 text-4xl" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-black mb-2">Interview Concluded</h2>
+                  <p className="text-gray-600 mb-8">
+                    You've answered all questions in this session. You can now view your detailed performance report and AI insights.
+                  </p>
+                  <button
+                    onClick={handleFinishInterview}
+                    className="btn-primary w-full flex items-center justify-center gap-2"
+                  >
+                    <HiChartBar />
+                    View Full Report
+                  </button>
+                </motion.div>
+              ) : questions.length === 0 ? (
+                /* Loading / Data Syncing State */
+                <div className="flex flex-col items-center justify-center py-20">
+                  <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin mb-4" />
+                  <p className="text-gray-500 font-medium tracking-tight">Syncing interview data...</p>
+                </div>
+              ) : currentQ ? (
+                /* Main Interview Question Loop */
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -30 }}
+                  className="max-w-3xl mx-auto space-y-6"
+                >
               {/* Question Card */}
               <motion.div
                 key={currentQuestionIndex}
@@ -748,7 +779,15 @@ const InterviewPage = () => {
                 </motion.div>
               )}
             </motion.div>
-          )}
+           ) : (
+             /* Error / Missing Question State */
+             <div className="text-center py-20">
+               <p className="text-red-500 font-bold mb-4">Question data missing or corrupted.</p>
+               <button onClick={() => navigate("/history")} className="btn-secondary">Back to History</button>
+             </div>
+           )}
+          </>
+         )}
         </AnimatePresence>
       </div>
     </div>
